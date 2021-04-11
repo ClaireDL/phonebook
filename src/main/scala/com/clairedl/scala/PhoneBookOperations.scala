@@ -7,7 +7,7 @@ import com.clairedl.scala.phonebook.phoneentry._
 /**
   * List of operations that can be done on the Phonebook:
   * - Load
-  * - Create
+  * - Add
   * - Export
   * - Save
   */
@@ -18,5 +18,10 @@ object PhoneBookOperations {
 
   def save(mode: PhoneBookWriter): Unit = {
     mode.write()
+  }
+
+  def add(newEntry: PhoneEntry, phoneBook: List[PhoneEntry]): List[PhoneEntry] = {
+    val updated: List[PhoneEntry] = newEntry :: phoneBook
+    updated
   }
 }
