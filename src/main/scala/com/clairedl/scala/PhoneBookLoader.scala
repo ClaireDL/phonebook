@@ -7,7 +7,7 @@ trait PhoneBookLoader {
   def load(): List[PhoneEntry]
 }
 
-class TextLoader(name: String) extends PhoneBookLoader {
+class FileLoader(name: String) extends PhoneBookLoader {
   def load(): List[PhoneEntry] = {
     Source
       .fromFile(name)
