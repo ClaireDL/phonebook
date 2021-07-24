@@ -5,7 +5,6 @@ import com.clairedl.scala.phonebook.phonebookwriter._
 import com.clairedl.scala.phonebook.phonebookloader._
 import com.clairedl.scala.phonebook.phoneentry._
 import com.clairedl.scala.phonebook.validation._
-import scala.util.matching.Regex
 import scala.io.StdIn.readLine
 
 object Main extends App {
@@ -21,25 +20,19 @@ object Main extends App {
     val phonebookOperator = new PhonebookOperations
 
     println(phonebookOperationsText)
+
     val choice = readLine()
+
     choice match {
       case "O" | "o"  => {
         println("Opening a phonebook")
         val textfile = readLine("What is the textfile name? ")
-        val checkTextfile = TextFileNameValidation.validate(textfile)
-        if (checkTextfile.isInstanceOf[Invalid]) {
-          println("The name you typed is not formatted correctly. \n")
-          menuPhonebook()
-        }
-        else {
-          val checkFile = FilePathValidation.validate(textfile)
-          if (checkFile.isInstanceOf[Invalid]) {
-            println("Could not find the file. \n")
+        val tempPhonebook = phonebookOperator.validateAndLoadTextfile(textfile)
+        tempPhonebook match {
+          case Some(x) => menuContact(x)
+          case None    => {
+            println(s"File not found/Incorrect name")
             menuPhonebook()
-          }
-          else {
-            val tempPhonebook = phonebookOperator.load(new FileLoader(textfile))
-            menuContact(tempPhonebook)
           }
         }
       }
@@ -81,34 +74,54 @@ object Main extends App {
       case "A" | "a"  => {
         println("Add a new contact")
         val newName = readLine("Name of the contact? ")
-        if (contactOperator.findName(newName,tempPhonebook).isEmpty) {
-          println(s"This is a new name! \n")
+        val newNumber = readLine("Phone number? Format has to be: +441234567890 " )
+        contactOperator.validateNewContact(newName, newNumber, tempPhonebook) match {
+          case Some(x)  => {
+            val updatedPhonebook = contactOperator.add(x,tempPhonebook)
+            menuContact(updatedPhonebook)
+          }
+          case None     => {
+            val findDuplicateName = contactOperator.findName(newName, tempPhonebook)
+            if (! findDuplicateName.isEmpty) {
+              println("The name already exists.")
+              findDuplicateName.foreach(println)
+              menuContact(tempPhonebook)
+            }
+            val validateNumber = PhoneNumberValidation.validate(newNumber)
+            if (validateNumber.isInstanceOf[Valid]) {
+              val findDuplicateNumber = contactOperator.findNumber(validateNumber, tempPhonebook)
+              if (! findDuplicateNumber.isEmpty) {
+                println("The number already exists.")
+                findDuplicateNumber.foreach(println)
+                menuContact(tempPhonebook)
+              }
+            }
+            else {
+              println("The number is incorrectly formatted. It has to be: +441234567890 ")
+              menuContact(tempPhonebook)
+            }
+          }
         }
-        else {
-          println(s"The name already exists \n")
-          menuContact(tempPhonebook)
-        }
-
-        val newPhoneNumber = readLine("Phone number? Format: +127123456789 \n")
-        val checkNumber = PhoneNumberValidation.validate(newPhoneNumber)
-        if (checkNumber.isInstanceOf[Valid]) contactOperator.add(PhoneEntry(newName, newPhoneNumber), tempPhonebook)
-        else {
-          println(s"The format is incorrect, it should be: +127123456789 \n")
-          menuContact(tempPhonebook)
-        }
-
-        menuContact(tempPhonebook)
       }
       case "F" | "f"  => {
         println("Find a contact")
+        // Add find function
         menuContact(tempPhonebook)
       }
       case "D" | "d"  => {
         println("Delete a contact")
+        // Add find contact and save new Phonebook without contact
         menuContact(tempPhonebook)
       }
-      case "S" | "s"  => println("Save and close phonebook")
-      case "E" | "e"  => println("Close without saving")
+      case "S" | "s"  => {
+        println("Save and close phonebook")
+        // Add save and write Phonebook
+
+      }
+      case "E" | "e"  => {
+        println("Close without saving")
+        // Add close Phonebook
+      }
       case _          => menuContact(tempPhonebook)
     }
   }

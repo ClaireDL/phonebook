@@ -25,11 +25,32 @@ class PhonebookOperations {
     phoneBook.flatMap(entry => if (entry.firstName == name) Some(entry) else None)
   }
 
-  def findNumber(number: Valid, phoneBook: List[PhoneEntry]): List[PhoneEntry] = {
+  def findNumber(number: Validated, phoneBook: List[PhoneEntry]): List[PhoneEntry] = {
     phoneBook.flatMap(entry => if (entry.phoneNumber == number) Some(entry) else None)
   }
 
   def findContact(contact: PhoneEntry, phoneBook: List[PhoneEntry]): List[PhoneEntry] = {
     phoneBook.flatMap(entry => if (entry == contact) Some(entry) else None)
+  }
+
+  def validateAndLoadTextfile(fileName: String): Option[List[PhoneEntry]] = {
+    val checkFilePath = FilePathValidation.validate(fileName)
+    if (checkFilePath.isInstanceOf[Invalid]) {
+      None
+    }
+    else Some(load(new FileLoader(fileName)))
+  }
+
+  def validateNewContact(name: String, phoneNumber: String, phoneBook: List[PhoneEntry]): Option[PhoneEntry] = {
+    val duplicateName = findName(name, phoneBook)
+    val validatedNumber = PhoneNumberValidation.validate(phoneNumber)
+
+    val duplicateNumber: Option[List[PhoneEntry]] = {
+      if (validatedNumber.isInstanceOf[Valid]) {Some(findNumber(validatedNumber, phoneBook))}
+      else None
+    }
+
+    if (duplicateName.isEmpty | duplicateNumber == None) Some(PhoneEntry(name, phoneNumber))
+    else None
   }
 }

@@ -1,5 +1,7 @@
 package com.clairedl.scala.phonebook.validation
 
+import java.io.File
+
 abstract class Validated
 
 class Valid(input: String) extends Validated
@@ -11,7 +13,7 @@ trait Validation{
 
 object TextFileNameValidation extends Validation {
   def validate(input: String): Validated = {
-    val pattern = "[0-9a-zA-Z- ].txt\\Z".r
+    val pattern = "[a-zA-Z0-9].txt\\Z".r
     pattern.findFirstIn(input) match {
       case Some(x)  => new Valid(input)
       case None     => new Invalid(input)
