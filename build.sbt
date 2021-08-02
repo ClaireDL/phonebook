@@ -9,6 +9,7 @@ lazy val root = (project in file("."))
   .settings(
     name := "Phonebook",
     exportJars := true,
+    libraryDependencies += "com.colofabrix.scala" %% "figlet4s-core" % "0.3.0",
   )
 
 // See https://www.scala-sbt.org/1.x/docs/Using-Sonatype.html for instructions on how to publish to Sonatype.
