@@ -10,8 +10,6 @@ import com.clairedl.scala.phonebook.userinterface._
 import scala.collection.mutable.ListBuffer
 
 object Main extends App {
-
-
   // val phoneBook = new PhonebookOperations
   // val loaded = phoneBook.load(new FileLoader("PhoneBookClaire.txt"))
 
@@ -33,5 +31,5 @@ object Main extends App {
 
   // With user interface
   val interface = new UserInterface
-  interface.menuPhonebook()
+  interface.menuPhonebook(List[PhoneEntry](), List[PhoneEntry](), "")
 }
