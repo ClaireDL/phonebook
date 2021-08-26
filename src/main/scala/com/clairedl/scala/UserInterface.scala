@@ -6,6 +6,9 @@ import com.clairedl.scala.phonebook.phonebookoperations._
 import com.clairedl.scala.phonebook.contactoperations._
 import com.clairedl.scala.phonebook.phoneentry._
 import com.clairedl.scala.phonebook.validation.PhoneNumberValidation
+import com.clairedl.scala.phonebook.validation.TextFileNameValidation
+import com.clairedl.scala.phonebook.validation.Valid
+import com.clairedl.scala.phonebook.phonebookwriter.TextWriter
 
 class UserInterface {
   // Using Figlet4s to render title
@@ -24,13 +27,32 @@ class UserInterface {
     s"O: open an existing phonebook \n" +
     s"C: create a new phonebook \n" +
     s"P: show contacts in a phonebook \n" +
-    s"S: save the changes \n" +
-    s"Q: save and quit the program \n" +
+    s"S: save the changes and quit the program \n" +
     s"W: quit witout saving changes \n" +
     s"D: delete an existing phonebook \n"
 
   def menuPhonebook(workingPhonebook: List[PhoneEntry], initialPhonebook: List[PhoneEntry], phonebookName: String): Unit = {
     val phonebookOperator = new PhonebookOperations
+
+    def namingSaving(title: String): Unit = {
+      val checkTitle = TextFileNameValidation.validate(title)
+      val finalTitle = {
+        if (checkTitle.isInstanceOf[Valid]) title
+        else title + ".txt"
+      }
+      execute2SDelay(println(s"The phonebook will be saved as $finalTitle \n"))
+      val confirmation = readLine(s"Confirm your choice (Y/N)")
+      confirmation match {
+        case "Y" | "y" => {
+          phonebookOperator.save(new TextWriter(finalTitle, workingPhonebook))
+          println(s"The phonebook is saved. Goodbye! \n")
+        }
+        case "N" | "n" => {
+          val updatedTitle = readLine(s"Write the name of the phonebook -> ")
+          execute2SDelay(namingSaving(updatedTitle))
+        }
+      }
+    }
 
     println(phonebookOperationsText)
 
@@ -70,13 +92,13 @@ class UserInterface {
         }
       }
       case "S" | "s"  => {
-        // Add save/write
-        execute2SDelay(println("Not implemented: Save and close the current phonebook \n"))
-        menuPhonebook(List[PhoneEntry](), List[PhoneEntry](), "")
-      }
-      case "Q" | "q"  => {
-        // Add save/write
-        println("Not implemented: The phonebook was saved. Goodbye! \n")
+        phonebookName match {
+          case "" => {
+            val title = readLine(s"Write the name of the phonebook -> ")
+            namingSaving(title)
+          }
+          case _ => namingSaving(phonebookName)
+        }
       }
       case "W" | "w"  => {
         println("Not implemented: No change was saved. Goodbye! \n")
@@ -113,7 +135,7 @@ class UserInterface {
       }
       case "A" | "a"  => {
         val newName = readLine("Name of the contact? -> ")
-        val newNumber = readLine("Phone number? Format has to be: +441234567890 -> " )
+        val newNumber = readLine("Phone number? Format has to be: +441234567890 -> ")
         // Checks that formatting of new contact is correct
         val checkNewContact = contactOperator.checkNewContact(newName, newNumber, workingPhonebook)
          checkNewContact match {
@@ -144,25 +166,43 @@ class UserInterface {
         }
       }
       case "F" | "f"  => {
-        println(s"You can look by typing the name OR phone number (formatting: +441234567890)")
-        val toFind = readLine("Name or phone number? -> ")
-        Thread.sleep(2000)
-        val checkNumber = contactOperator.checkNumberFormatting(toFind)
-        val found = {
-          if (checkNumber) contactOperator.findNumber(toFind, workingPhonebook)
-          else contactOperator.findName(toFind, workingPhonebook)
-        }
-        if (found.isEmpty) {
-          println(s"\n")
-          execute2SDelay(println(s"No contact was found. \n"))
-          menuContact(workingPhonebook, initialPhonebook, phonebookName)
-        }
-        else {
-          println(s"\n")
+        def showFound(contacts: List[PhoneEntry]): Unit = {
           println(s"We found the following contact(s):")
-          found.foreach(println)
-          execute2SDelay(println(s"\n"))
-          menuContact(workingPhonebook, initialPhonebook, phonebookName)
+          contacts.foreach(println)
+        }
+        println(s"If you want to look by name, type 'n', by phone number type 'p'")
+        val choice = readLine("Your choice -> ")
+        choice match {
+          case "N" | "n"  => {
+            val name = readLine("Name to find -> ")
+            val found = contactOperator.findName(name, workingPhonebook)
+            if (found.isEmpty) {
+              println(s"\n")
+              execute2SDelay(println(s"No such contact was found.\n"))
+              menuContact(workingPhonebook, initialPhonebook, phonebookName)
+            }
+            else {
+              showFound(found)
+              menuContact(workingPhonebook, initialPhonebook, phonebookName)
+            }
+          }
+          case "P" | "p"  => {
+            val number = readLine("Phone number to find (formatting: +441234567890) -> ")
+            val checkNumber = contactOperator.checkNumberFormatting(number)
+            if (checkNumber) {
+              val found = contactOperator.findNumber(number, workingPhonebook)
+              if (found.isEmpty) {
+              println(s"\n")
+              execute2SDelay(println(s"No contact was found: did you type it correctly? \n"))
+              menuContact(workingPhonebook, initialPhonebook, phonebookName)
+              }
+              else showFound(found)
+            }
+            else {
+              println("Incorrect formatting. \n")
+              menuContact(workingPhonebook, initialPhonebook, phonebookName)
+            }
+          }
         }
       }
       case "D" | "d"  => {
@@ -183,7 +223,6 @@ class UserInterface {
         }
       }
       case "B" | "b"  => execute2SDelay(menuPhonebook(workingPhonebook, initialPhonebook, phonebookName))
-
       case _          => execute2SDelay(menuContact(workingPhonebook, initialPhonebook, phonebookName))
     }
   }
