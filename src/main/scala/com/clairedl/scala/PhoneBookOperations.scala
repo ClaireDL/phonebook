@@ -4,6 +4,7 @@ import com.clairedl.scala.phonebook.phonebookwriter._
 import com.clairedl.scala.phonebook.phonebookloader._
 import com.clairedl.scala.phonebook.phoneentry._
 import com.clairedl.scala.phonebook.validation._
+
 /**
   * List of operations that can be done on the Phonebook:
   * - Load
@@ -23,4 +24,6 @@ class PhonebookOperations {
     }
     else Some(load(new FileLoader(fileName)))
   }
+
+  def close(source: PhoneBookLoader): Unit = source.closePhonebook()
 }

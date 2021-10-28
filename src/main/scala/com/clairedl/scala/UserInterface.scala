@@ -11,16 +11,19 @@ import com.clairedl.scala.phonebook.validation.Valid
 import com.clairedl.scala.phonebook.phonebookwriter.TextWriter
 
 class UserInterface {
-  // Using Figlet4s to render title
-  private val builder = Figlet4s.builder()
-  private val title = s"Phonebook!"
-  private val renderTitle = builder.render(title)
-  renderTitle.print()
-
-  private def execute2SDelay(function: Unit): Unit = {
+  // Adds a 2s delay before executing a function (to increase visibility for user).
+  def execute2SDelay(function: Unit): Unit = {
     Thread.sleep(2000)
     function
   }
+
+  // Using Figlet4s to render title
+  val builder = Figlet4s.builder()
+  val title = s"Phonebook!"
+  val renderTitle = builder.render(title)
+  renderTitle.print()
+
+  val phonebookOperator = new PhonebookOperations
 
   val phonebookOperationsText = s"Choose one of the following options (type the corresponding letter): \n" +
     s"\n" +
@@ -32,16 +35,15 @@ class UserInterface {
     s"D: delete an existing phonebook \n"
 
   def menuPhonebook(workingPhonebook: List[PhoneEntry], initialPhonebook: List[PhoneEntry], phonebookName: String): Unit = {
-    val phonebookOperator = new PhonebookOperations
-
-    def namingSaving(title: String): Unit = {
+    // Checks the file name is valid that the user is happy with it before saving it
+    def checkAndSave(title: String): Unit = {
       val checkTitle = TextFileNameValidation.validate(title)
       val finalTitle = {
         if (checkTitle.isInstanceOf[Valid]) title
         else title + ".txt"
       }
       execute2SDelay(println(s"The phonebook will be saved as $finalTitle \n"))
-      val confirmation = readLine(s"Confirm your choice (Y/N)")
+      val confirmation = readLine(s"Are you happy with this title? (Y/N) -> ")
       confirmation match {
         case "Y" | "y" => {
           phonebookOperator.save(new TextWriter(finalTitle, workingPhonebook))
@@ -49,7 +51,7 @@ class UserInterface {
         }
         case "N" | "n" => {
           val updatedTitle = readLine(s"Write the name of the phonebook -> ")
-          execute2SDelay(namingSaving(updatedTitle))
+          execute2SDelay(checkAndSave(updatedTitle))
         }
       }
     }
@@ -65,15 +67,16 @@ class UserInterface {
         val originalPhonebook = phonebookOperator.validateAndLoadTextfile(textfile)
         originalPhonebook match {
           case Some(x) => menuContact(x, x, textfile)
+
           case None    => {
             execute2SDelay(println(s"File not found/Incorrect name"))
             menuPhonebook(List[PhoneEntry](), List[PhoneEntry](), "")
           }
         }
       }
-      case "C" | "c"  => {
-        menuContact(List[PhoneEntry](), List[PhoneEntry](), "")
-      }
+
+      case "C" | "c"  => menuContact(List[PhoneEntry](), List[PhoneEntry](), "")
+      
       case "P" | "p" => {
         val textfile = readLine("What is the textfile name? -> ")
         val phonebook = phonebookOperator.validateAndLoadTextfile(textfile)
@@ -82,31 +85,35 @@ class UserInterface {
           case Some(x) => {
             println(s"Contacts in $textfile: \n")
             x.foreach(println)
-            execute2SDelay(println(s"\n"))
+            execute2SDelay(println(s" \n"))
             menuPhonebook(x, x, textfile)
           }
+
           case None    => {
             execute2SDelay(println(s"File not found/Incorrect name \n"))
             menuPhonebook(List[PhoneEntry](), List[PhoneEntry](), "")
           }
         }
       }
+
       case "S" | "s"  => {
         phonebookName match {
           case "" => {
             val title = readLine(s"Write the name of the phonebook -> ")
-            namingSaving(title)
+            checkAndSave(title)
           }
-          case _ => namingSaving(phonebookName)
+
+          case _ => checkAndSave(phonebookName)
         }
       }
-      case "W" | "w"  => {
-        println("Not implemented: No change was saved. Goodbye! \n")
-      }
+      
+      case "W" | "w"  => println("No change was saved. Goodbye! \n")
+
       case "D" | "d"  => {
         // Add deleting a phonebook
         println("Not implemented: The phonebook was deleted.")
       }
+
       case _          => {
         execute2SDelay(println("This instruction does not exist. \n"))
         menuPhonebook(List[PhoneEntry](), List[PhoneEntry](), "")
@@ -133,6 +140,7 @@ class UserInterface {
         workingPhonebook.foreach(println)
         execute2SDelay(menuContact(workingPhonebook, initialPhonebook, phonebookName))
       }
+
       case "A" | "a"  => {
         val newName = readLine("Name of the contact? -> ")
         val newNumber = readLine("Phone number? Format has to be: +441234567890 -> ")
@@ -152,8 +160,8 @@ class UserInterface {
             // Duplicate: shows the duplicate but does not add to the phonebook
             else {
               println(s"\n")
-              println(s"We found similar contacts. Make sure there are no duplicates. \n")
-              println(s"This is the contact we found: \n")
+              println(s"We found similar contacts; no duplicates allowed. \n")
+              execute2SDelay(println(s"Existing contact: \n"))
               checkNewContact.foreach(println)
               Thread.sleep(2000)
               menuContact(workingPhonebook, initialPhonebook, phonebookName)
@@ -165,13 +173,17 @@ class UserInterface {
           }
         }
       }
+
       case "F" | "f"  => {
         def showFound(contacts: List[PhoneEntry]): Unit = {
           println(s"We found the following contact(s):")
           contacts.foreach(println)
         }
+
         println(s"If you want to look by name, type 'n', by phone number type 'p'")
+
         val choice = readLine("Your choice -> ")
+
         choice match {
           case "N" | "n"  => {
             val name = readLine("Name to find -> ")
@@ -205,15 +217,18 @@ class UserInterface {
           }
         }
       }
+
       case "D" | "d"  => {
         println(s"This is the phonebook content:")
         workingPhonebook.foreach(println)
         execute2SDelay(println(s"\n"))
+
         val toDelete = readLine("Type the name of the contact you want to remove from the phonebook -> ")
         val contactToDelete = contactOperator.findName(toDelete, workingPhonebook)
         Thread.sleep(2000)
         println(s"We found: $contactToDelete \n")
-        val confirmation = readLine(s"Are you sure you want to delete it? (Y/N) -> ")
+
+        val confirmation = readLine(s"Are you sure you want to delete this contact? (Y/N) -> ")
         confirmation match {
           case "Y" | "y" => {
             val result = contactToDelete.map(x => workingPhonebook.filterNot(entry => entry == x)).flatten
@@ -222,8 +237,13 @@ class UserInterface {
           case "N" | "n" => menuContact(workingPhonebook, initialPhonebook, phonebookName)
         }
       }
+
       case "B" | "b"  => execute2SDelay(menuPhonebook(workingPhonebook, initialPhonebook, phonebookName))
-      case _          => execute2SDelay(menuContact(workingPhonebook, initialPhonebook, phonebookName))
+
+      case _          => {
+        execute2SDelay(println("This instruction does not exist. \n"))
+        execute2SDelay(menuContact(workingPhonebook, initialPhonebook, phonebookName))
+      }
     }
   }
 }

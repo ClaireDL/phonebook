@@ -5,6 +5,8 @@ import com.clairedl.scala.phonebook.phoneentry._
 
 trait PhoneBookLoader {
   def load(): List[PhoneEntry]
+
+  def closePhonebook(): Unit
 }
 
 class FileLoader(name: String) extends PhoneBookLoader {
@@ -18,4 +20,6 @@ class FileLoader(name: String) extends PhoneBookLoader {
       }
     .toList
   }
+
+  def closePhonebook(): Unit = Source.fromFile(name).close()
 }

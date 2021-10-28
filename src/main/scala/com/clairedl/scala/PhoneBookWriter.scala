@@ -2,6 +2,7 @@ package com.clairedl.scala.phonebook.phonebookwriter
 
 import com.clairedl.scala.phonebook.phoneentry._
 import java.io._
+import scala.io.Source
 
 trait PhoneBookWriter {
   def write(): Unit
