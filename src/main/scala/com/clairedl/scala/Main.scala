@@ -1,15 +1,16 @@
 package com.clairedl.scala
 
-import com.clairedl.scala.phonebook.phonebookoperations._
-import com.clairedl.scala.phonebook.contactoperations._
-import com.clairedl.scala.phonebook.phonebookwriter._
-import com.clairedl.scala.phonebook.phonebookloader._
-import com.clairedl.scala.phonebook.phoneentry._
-import com.clairedl.scala.phonebook.validation._
-import com.clairedl.scala.phonebook.userinterface._
-import scala.collection.mutable.ListBuffer
+import com.colofabrix.scala.figlet4s.unsafe._
+// import scala.io.StdIn.readLine
 
 object Main extends App {
-  val interface = new UserInterface
-  interface.menuPhonebook(List[PhoneEntry](), List[PhoneEntry](), "")
+  // Using Figlet4s to render title
+  val builder = Figlet4s.builder()
+  val title = s"Phonebook!"
+  val renderTitle = builder.render(title)
+
+  // Welcome title
+  renderTitle.print()
+
+
 }
