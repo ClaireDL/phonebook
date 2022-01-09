@@ -1,4 +1,4 @@
-package com.clairedl.scala
+package com.clairedl.scala.phonebook
 
 import com.colofabrix.scala.figlet4s.unsafe._
 // import scala.io.StdIn.readLine
