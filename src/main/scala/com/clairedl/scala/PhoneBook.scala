@@ -9,7 +9,7 @@ class PhoneBook(name: String, content: List[Contact]) {
 
   def delete(contact: Contact): List[Contact] = ???
 
-  def findByName(name: String): Contact = ???
+  def findByName(name: String): Contact = content.filter(_.name == name)(0)
 
   def findByNumber(number: String): Contact = ???
 
